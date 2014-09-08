@@ -8,14 +8,14 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="905.0" prefWidth="791.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.FastestPathSimulatorController">
+<AnchorPane prefHeight="905.0" prefWidth="791.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.ExplorationViewController">
    <children>
       <MenuBar layoutY="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <menus>
           <Menu mnemonicParsing="false" text="File">
             <items>
               <MenuItem mnemonicParsing="false" onAction="#onDescriptorLoaded" text="Load Descriptor" />
-                  <MenuItem mnemonicParsing="false" onAction="#onDescriptorLoaded" text="Save Descriptor" />
+                  <MenuItem mnemonicParsing="false" onAction="#onDescriptorSaved" text="Save Descriptor" />
             </items>
           </Menu>
         </menus>
@@ -102,8 +102,8 @@
             <Font size="20.0" />
          </font>
       </Label>
-      <ChoiceBox fx:id="secondsPerStepChoiceBox1" layoutX="666.0" layoutY="384.0" prefHeight="26.0" prefWidth="96.0" />
-      <ChoiceBox fx:id="secondsPerStepChoiceBox11" layoutX="703.0" layoutY="422.0" prefHeight="26.0" prefWidth="60.0" />
+      <ChoiceBox fx:id="timeLimitChoiceBox" layoutX="666.0" layoutY="384.0" prefHeight="26.0" prefWidth="83.0" />
+      <ChoiceBox fx:id="coverageLimitChoiceBox" layoutX="703.0" layoutY="422.0" prefHeight="26.0" prefWidth="46.0" />
       <Label layoutX="553.0" layoutY="47.0" text="Time Left:">
          <font>
             <Font size="20.0" />
@@ -114,12 +114,22 @@
             <Font size="20.0" />
          </font>
       </Label>
-      <Label layoutX="748.0" layoutY="49.0" text="-">
+      <Label fx:id="timeLeftLabel" layoutX="748.0" layoutY="49.0" text="-">
          <font>
             <Font size="20.0" />
          </font>
       </Label>
-      <Label layoutX="749.0" layoutY="87.0" text="-">
+      <Label fx:id="currentCoverageLabel" layoutX="749.0" layoutY="87.0" text="-">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label layoutX="752.0" layoutY="384.0" text="s">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label layoutX="752.0" layoutY="422.0" text="\%">
          <font>
             <Font size="20.0" />
          </font>
