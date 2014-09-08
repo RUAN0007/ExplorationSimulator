@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="905.0" prefWidth="791.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.FastestPathSimulatorController">
+   <children>
+      <MenuBar layoutY="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+              <MenuItem mnemonicParsing="false" onAction="#onDescriptorLoaded" text="Load Descriptor" />
+                  <MenuItem mnemonicParsing="false" onAction="#onDescriptorLoaded" text="Save Descriptor" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+      <GridPane fx:id="arena" layoutX="68.0" layoutY="29.0" onMouseExited="#onArenaHovered" onMouseMoved="#onArenaHovered" prefHeight="630.0" prefWidth="480.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="50.0">
+       
+      </GridPane>
+      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Text" />
+      <Label fx:id="msgLabel" alignment="CENTER" layoutX="544.0" layoutY="133.0" prefHeight="80.0" prefWidth="235.0" textAlignment="CENTER" textFill="RED" wrapText="true">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <Rectangle fx:id="demoCell" arcHeight="40.0" arcWidth="40.0" fill="#868686" height="74.0" layoutX="572.0" layoutY="268.0" stroke="BLACK" strokeType="INSIDE" width="76.0" />
+      <Label fx:id="cellTypeLabel" alignment="CENTER" layoutX="566.0" layoutY="222.0" prefHeight="38.0" prefWidth="179.0" text="--">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label layoutX="672.0" layoutY="266.0" prefHeight="38.0" prefWidth="54.0" text="Row:">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label fx:id="rowIndexLabel" alignment="CENTER" layoutX="710.0" layoutY="266.0" prefHeight="38.0" prefWidth="54.0" text="-" textAlignment="CENTER">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label layoutX="672.0" layoutY="306.0" prefHeight="38.0" prefWidth="54.0" text="Col:">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label fx:id="colIndexLabel" alignment="CENTER" layoutX="709.0" layoutY="305.0" prefHeight="38.0" prefWidth="54.0" text="-" textAlignment="CENTER">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <ToggleButton fx:id="startpausedButton" layoutX="551.0" layoutY="522.0" mnemonicParsing="false" onAction="#onStartPausedPressed" prefHeight="39.0" prefWidth="95.0" text="Start" textAlignment="CENTER">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </ToggleButton>
+      <Button fx:id="resetButton" alignment="CENTER" layoutX="673.0" layoutY="521.0" mnemonicParsing="false" onAction="#onResetPressed" prefHeight="39.0" prefWidth="95.0" text="Reset">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Button>
+      
+      <Label layoutX="543.0" layoutY="459.0" text="Second/Step:">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label layoutX="557.0" layoutY="602.0" text="Step Count: ">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label layoutX="556.0" layoutY="634.0" text="Turn Count: ">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label fx:id="stepCountLabel" alignment="CENTER" layoutX="719.0" layoutY="602.0" text="00">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label fx:id="turnCountLabel" alignment="CENTER" layoutX="718.0" layoutY="634.0" text="00">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <ChoiceBox fx:id="secondsPerStepChoiceBox" layoutX="698.0" layoutY="458.0" prefHeight="26.0" prefWidth="67.0" />
+      <Label layoutX="543.0" layoutY="385.0" text="Time Limit:">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label layoutX="545.0" layoutY="422.0" text="Coverage Limit:">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <ChoiceBox fx:id="secondsPerStepChoiceBox1" layoutX="666.0" layoutY="384.0" prefHeight="26.0" prefWidth="96.0" />
+      <ChoiceBox fx:id="secondsPerStepChoiceBox11" layoutX="703.0" layoutY="422.0" prefHeight="26.0" prefWidth="60.0" />
+      <Label layoutX="553.0" layoutY="47.0" text="Time Left:">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label layoutX="553.0" layoutY="86.0" text="Current Coverage:">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label layoutX="748.0" layoutY="49.0" text="-">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label layoutX="749.0" layoutY="87.0" text="-">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>
