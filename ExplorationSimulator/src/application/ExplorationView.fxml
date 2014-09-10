@@ -20,7 +20,7 @@
           </Menu>
         </menus>
       </MenuBar>
-      <GridPane fx:id="arena" layoutX="68.0" layoutY="29.0" onMouseExited="#onArenaHovered" onMouseMoved="#onArenaHovered" prefHeight="630.0" prefWidth="480.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="50.0">
+      <GridPane fx:id="arena" layoutX="68.0" layoutY="29.0" onMouseExited="#onArenaHovered" onMouseMoved="#onArenaHovered" onMousePressed="#onArenaClicked" prefHeight="630.0" prefWidth="480.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="50.0">
        
       </GridPane>
       <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Text" />
@@ -104,22 +104,22 @@
       </Label>
       <ChoiceBox fx:id="timeLimitChoiceBox" layoutX="666.0" layoutY="384.0" prefHeight="26.0" prefWidth="83.0" />
       <ChoiceBox fx:id="coverageLimitChoiceBox" layoutX="703.0" layoutY="422.0" prefHeight="26.0" prefWidth="46.0" />
-      <Label layoutX="553.0" layoutY="47.0" text="Time Left:">
+      <Label layoutX="553.0" layoutY="47.0" text="Time :">
          <font>
             <Font size="20.0" />
          </font>
       </Label>
-      <Label layoutX="553.0" layoutY="86.0" text="Current Coverage:">
+      <Label layoutX="553.0" layoutY="86.0" text="Coverage:">
          <font>
             <Font size="20.0" />
          </font>
       </Label>
-      <Label fx:id="timeLeftLabel" layoutX="748.0" layoutY="49.0" text="-">
+      <Label fx:id="timeLabel" layoutX="748.0" layoutY="49.0" text="-" textAlignment="RIGHT">
          <font>
             <Font size="20.0" />
          </font>
       </Label>
-      <Label fx:id="currentCoverageLabel" layoutX="749.0" layoutY="87.0" text="-">
+      <Label fx:id="currentCoverageLabel" layoutX="749.0" layoutY="87.0" text="-" textAlignment="RIGHT">
          <font>
             <Font size="20.0" />
          </font>

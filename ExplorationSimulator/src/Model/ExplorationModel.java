@@ -12,8 +12,8 @@ public class ExplorationModel {
 	private FastestPathComputer pathComputer;
 	private ArrayList<Action> actions;
 	
-	private Block startBlock;
-	private Block goalBlock;
+	private Block startSouthWestBlock;
+	private Block goalSouthWestBlock;
 	private Block robotInitSouthWestBlock;
 	private Orientation robotInitStartOrientation;
 	private Cell[][] status;
@@ -23,8 +23,8 @@ public class ExplorationModel {
 		super();
 		this.realMap = realMap;
 		this.pathComputer = pathComputer;
-		this.startBlock = startBlock;
-		this.goalBlock = goalBlock;
+		this.startSouthWestBlock = startBlock;
+		this.goalSouthWestBlock = goalBlock;
 		
 		this.actions = new ArrayList<>();
 		this.initExploredMap(this.exploredMap.getRowCount(),this.exploredMap.getColumnCount());
@@ -34,7 +34,38 @@ public class ExplorationModel {
 
 	private void updateStatus() {
 		updateForArenaMap();
+		updateForStart();
+		updateForGoal();
 		updateForRobot();
+	}
+	
+	private void updateForGoal() {
+		int robotDiameterInCellNum = this.robot.getDiameterInCellNum();
+		int southWestGoalRowID = this.goalSouthWestBlock.getRowID();
+		int southWestGoalColID = this.goalSouthWestBlock.getColID();
+		
+		for(int rowID = 0; rowID < robotDiameterInCellNum; rowID++){
+			for(int colID = 0;colID < robotDiameterInCellNum; colID++){
+				if(this.exploredMap.getCells()[southWestGoalRowID - rowID][southWestGoalColID + colID] == CellState.UNEXPLORED) continue;
+				this.status[southWestGoalRowID - rowID][southWestGoalColID + colID]
+						= Cell.GOAL;
+			}
+		}
+	}
+	
+	
+	private void updateForStart() {
+		int robotDiameterInCellNum = this.robot.getDiameterInCellNum();
+		int southWestStartRowID = this.startSouthWestBlock.getRowID();
+		int southWestStartColID = this.startSouthWestBlock.getColID();
+		
+		for(int rowID = 0; rowID < robotDiameterInCellNum; rowID++){
+			for(int colID = 0;colID < robotDiameterInCellNum; colID++){
+				if(this.exploredMap.getCells()[southWestStartRowID - rowID][southWestStartColID + colID] == CellState.UNEXPLORED) continue;
+				this.status[southWestStartRowID - rowID][southWestStartColID + colID]
+						= Cell.START;
+			}
+		}
 	}
 		
 	private void updateForArenaMap() {
@@ -141,6 +172,7 @@ public class ExplorationModel {
 		int southWestColID = this.robot.getSouthWestBlock().getColID();
 		int southWestRowID = this.robot.getSouthWestBlock().getRowID();
 
+		
 		for(int rowID = 0;rowID < span;rowID++){
 			for(int colID = 0;colID < span;colID++){
 				this.exploredMap.setCellState(southWestRowID - rowID,southWestColID + colID,CellState.EMPTY); 
@@ -202,14 +234,14 @@ public class ExplorationModel {
 		
 	}
 	
-	private boolean isFinished() {
+	public boolean isFinished() {
 		if(robot == null) return false;
 		if(getCoverage() < 1.0) return false;
-		if(!this.robot.getSouthWestBlock().equals(goalBlock)) return false;
+		if(!this.robot.getSouthWestBlock().equals(goalSouthWestBlock)) return false;
 		return true;
 	}
 
-	private double getCoverage() {
+	public double getCoverage() {
 		int unExploredCount = 0;
 		int totalCount = 0;
 		for(int rowID = 0;rowID < this.exploredMap.getRowCount();rowID++){
@@ -221,6 +253,7 @@ public class ExplorationModel {
 			}
 		}
 		return (double)unExploredCount/(double)totalCount;
+		
 	}
 
 	public String getExploredDescriptor(){
