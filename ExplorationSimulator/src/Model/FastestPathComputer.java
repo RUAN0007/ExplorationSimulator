@@ -3,7 +3,6 @@ package Model;
 import java.util.ArrayList;
 
 import Model.ArenaTemplate.CellState;
-import Model.Cell;
 
 public abstract class FastestPathComputer {
 	
@@ -63,7 +62,7 @@ public abstract class FastestPathComputer {
 				boolean obstacleInArea = false;
 				for(int rowSpan = 0;rowSpan < robotDiameterInCellNum;rowSpan++){
 					for(int colSpan = 0;colSpan < robotDiameterInCellNum;colSpan++){
-						if(arena.getCells()[rowID - rowSpan][colID + colSpan] == CellState.OBSTACLE){
+						if(arena.getCell(rowID - rowSpan,colID + colSpan) == CellState.OBSTACLE){
 							obstacleInArea = true;
 						}
 					}

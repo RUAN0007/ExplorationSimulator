@@ -6,6 +6,10 @@ import Model.ArenaTemplate.CellState;
 public class CustomizedArena {
 	
 	public class ArenaException extends Exception{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 		private int ID;
 		private String msg;
 		public String toString(){
@@ -80,13 +84,15 @@ public class CustomizedArena {
 		return columnCount;
 	}
 
+//
+//
+//	public ArenaTemplate.CellState[][] getCells() {
+//		return cells;
+//	}
 
-
-	public ArenaTemplate.CellState[][] getCells() {
-		return cells;
+	public ArenaTemplate.CellState getCell(int rowID,int colID){
+		return this.cells[rowID][colID];
 	}
-
-
 
 	private boolean unExploredCellExists(){
 		int templateRowCount = this.template.getRowCount();

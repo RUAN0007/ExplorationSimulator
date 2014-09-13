@@ -46,7 +46,7 @@ public class ExplorationModel {
 		
 		for(int rowID = 0; rowID < robotDiameterInCellNum; rowID++){
 			for(int colID = 0;colID < robotDiameterInCellNum; colID++){
-				if(this.exploredMap.getCells()[southWestGoalRowID - rowID][southWestGoalColID + colID] == CellState.UNEXPLORED) continue;
+				if(this.exploredMap.getCell(southWestGoalRowID - rowID,southWestGoalColID + colID) == CellState.UNEXPLORED) continue;
 				this.status[southWestGoalRowID - rowID][southWestGoalColID + colID]
 						= Cell.GOAL;
 			}
@@ -61,7 +61,7 @@ public class ExplorationModel {
 		
 		for(int rowID = 0; rowID < robotDiameterInCellNum; rowID++){
 			for(int colID = 0;colID < robotDiameterInCellNum; colID++){
-				if(this.exploredMap.getCells()[southWestStartRowID - rowID][southWestStartColID + colID] == CellState.UNEXPLORED) continue;
+				if(this.exploredMap.getCell(southWestStartRowID - rowID,southWestStartColID + colID) == CellState.UNEXPLORED) continue;
 				this.status[southWestStartRowID - rowID][southWestStartColID + colID]
 						= Cell.START;
 			}
@@ -71,11 +71,11 @@ public class ExplorationModel {
 	private void updateForArenaMap() {
 		for(int rowID = 0;rowID < this.exploredMap.getRowCount();rowID++){
 			for(int colID = 0;colID < this.exploredMap.getColumnCount();colID++){
-				if(this.exploredMap.getCells()[rowID][colID] == CellState.OBSTACLE){
+				if(this.exploredMap.getCell(rowID,colID) == CellState.OBSTACLE){
 					this.status[rowID][colID] = Cell.OBSTACLE;
-				}else if(this.exploredMap.getCells()[rowID][colID] == CellState.EMPTY){
+				}else if(this.exploredMap.getCell(rowID,colID) == CellState.EMPTY){
 					this.status[rowID][colID] = Cell.EMPTY;
-				}else if(this.exploredMap.getCells()[rowID][colID] == CellState.UNEXPLORED){
+				}else if(this.exploredMap.getCell(rowID,colID) == CellState.UNEXPLORED){
 					this.status[rowID][colID] = Cell.UNEXMPLORED;
 				}else{
 					assert(false):"Should not reach here";
@@ -206,8 +206,7 @@ public class ExplorationModel {
 		
 		for(int rowID = 0;rowID < span;rowID++){
 			for(int colID = 0;colID < span;colID++){
-				if(this.realMap.getCells()
-						[southWestRowID - rowID][southWestColID + colID] 
+				if(this.realMap.getCell(southWestRowID - rowID,southWestColID + colID)
 						== ArenaTemplate.CellState.OBSTACLE){
 					return true;
 				}
@@ -247,7 +246,7 @@ public class ExplorationModel {
 		for(int rowID = 0;rowID < this.exploredMap.getRowCount();rowID++){
 			for(int colID = 0;colID < this.exploredMap.getColumnCount();colID++){
 				totalCount++;
-				if(this.exploredMap.getCells()[rowID][colID] == CellState.UNEXPLORED){
+				if(this.exploredMap.getCell(rowID,colID) == CellState.UNEXPLORED){
 					unExploredCount++;
 				}
 			}

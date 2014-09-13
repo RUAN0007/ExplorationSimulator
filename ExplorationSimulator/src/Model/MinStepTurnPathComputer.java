@@ -4,13 +4,13 @@ import java.util.ArrayList;
 
 public class MinStepTurnPathComputer extends FastestPathComputer {
 	
-	private static int OREIT_NULL = -1;
-	private static int OREIT_MIN = 0;
+	private static int OREITATION_NULL = -1;
+	private static int OREITATION_MIN = 0;
 	private static int NORTH_INDEX = 0;
 	private static int WEST_INDEX = 1;
 	private static int SOUTH_INDEX = 2;
 	private static int EAST_INDEX = 3;
-	private static int OREIT_MAX = 3;
+	private static int OREITATION_MAX = 3;
 	
 	
 	
@@ -45,12 +45,12 @@ public class MinStepTurnPathComputer extends FastestPathComputer {
 		
 		int startDrcID = IndexOfOrientation(startOrientation);
 		distance[startRowID][startColID][startDrcID] = 0;
-		int goalDrcID = OREIT_NULL;
+		int goalDrcID = OREITATION_NULL;
 		while(true){
 			
 			 this.minRowID = -1;
 			 this.minColID = -1;
-			 this.minDrcID = OREIT_NULL;
+			 this.minDrcID = OREITATION_NULL;
 			 this.minDist = Integer.MAX_VALUE;
 			
 			if(!findUnexploredCellWithDist(rowCount, colCount)) return null;
@@ -60,17 +60,17 @@ public class MinStepTurnPathComputer extends FastestPathComputer {
 			explored[minRowID][minColID][minDrcID] = true;
 			
 			goalDrcID = minDistGoalDrcID(goalRowID, goalColID);
-			if(goalDrcID != OREIT_NULL) break;
+			if(goalDrcID != OREITATION_NULL) break;
 			
 			
 			//Update its three adjacent node
 			
-			int leftOrientationID = (minDrcID + OREIT_MAX) % (OREIT_MAX + 1);
+			int leftOrientationID = (minDrcID + OREITATION_MAX) % (OREITATION_MAX + 1);
 			if(updateNodeDist(minRowID,minColID,leftOrientationID,turnWeight)){
 				preAction[minRowID][minColID][leftOrientationID] = Action.TURN_LEFT;				
 			};
 			
-			int rightOrientationID = (minDrcID + 1) % (OREIT_MAX + 1);
+			int rightOrientationID = (minDrcID + 1) % (OREITATION_MAX + 1);
 			if(updateNodeDist(minRowID,minColID,rightOrientationID,turnWeight)){
 				preAction[minRowID][minColID][rightOrientationID] = Action.TURN_RIGHT;				
 			};
@@ -100,7 +100,7 @@ public class MinStepTurnPathComputer extends FastestPathComputer {
 		}// END of infinite WHILE
 		
 		
-		for(int drcID = OREIT_MIN;drcID <= OREIT_MAX;drcID ++){
+		for(int drcID = OREITATION_MIN;drcID <= OREITATION_MAX;drcID ++){
 			assert(explored[goalRowID][goalColID][drcID]);
 			assert(preAction[goalRowID][goalColID][drcID] != null);
 		}//END of loop on orientation		
@@ -140,11 +140,11 @@ public class MinStepTurnPathComputer extends FastestPathComputer {
 
 	private int minDistGoalDrcID(int goalRowID, int goalColID) {
 		//All the orientations at goal state has been explored
-		int goalDrcID = OREIT_NULL;
+		int goalDrcID = OREITATION_NULL;
 		int minDistForDrcOnGoal = Integer.MAX_VALUE;
-		for(int drcID = OREIT_MIN;drcID <= OREIT_MAX;drcID ++){
+		for(int drcID = OREITATION_MIN;drcID <= OREITATION_MAX;drcID ++){
 			if(!explored[goalRowID][goalColID][drcID]){
-				goalDrcID = OREIT_NULL;
+				goalDrcID = OREITATION_NULL;
 				break;
 			}else{
 				if(distance[goalRowID][goalColID][drcID] < minDistForDrcOnGoal){
@@ -164,7 +164,7 @@ public class MinStepTurnPathComputer extends FastestPathComputer {
 		boolean foundMin = false;
 		 for(int rowID = 0;rowID < rowCount ; rowID++){
 			for(int colID = 0;colID < colCount;colID++){
-				for(int drcID = OREIT_MIN;drcID <= OREIT_MAX;drcID ++){
+				for(int drcID = OREITATION_MIN;drcID <= OREITATION_MAX;drcID ++){
 					if(!explored[rowID][colID][drcID] && 
 							distance[rowID][colID][drcID] < minDist){
 						minRowID = rowID;
@@ -193,7 +193,7 @@ public class MinStepTurnPathComputer extends FastestPathComputer {
 				if(map[rowID][colID].equals(new Integer(1))){
 					isObstacle = true;
 				}
-				for(int drcID = OREIT_MIN;drcID <= OREIT_MAX;drcID ++){
+				for(int drcID = OREITATION_MIN;drcID <= OREITATION_MAX;drcID ++){
 					distance[rowID][colID][drcID] = Integer.MAX_VALUE;
 					preAction[rowID][colID][drcID] = null;
 					explored[rowID][colID][drcID] = isObstacle;
@@ -222,10 +222,10 @@ public class MinStepTurnPathComputer extends FastestPathComputer {
 			Action currentAction = preAction[rowID][colID][drcID];
 			actions.add(0, currentAction);
 			if(currentAction.equals(Action.TURN_LEFT)){
-				 drcID = (drcID + 1) % (OREIT_MAX + 1);
+				 drcID = (drcID + 1) % (OREITATION_MAX + 1);
 
 			}else if(currentAction.equals(Action.TURN_RIGHT)){
-				drcID = (drcID + OREIT_MAX) % (OREIT_MAX + 1);
+				drcID = (drcID + OREITATION_MAX) % (OREITATION_MAX + 1);
 
 			}else{
 				//currentAction == MOVE_FORWARD

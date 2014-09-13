@@ -3,13 +3,14 @@ package Model;
 import java.util.ArrayList;
 import java.util.List;
 
-
-import javafx.scene.control.Cell;
-
 public class ArenaTemplate {
 	public enum CellState {UNEXPLORED,EMPTY,OBSTACLE};
 	
 	public class ArenaTemplateException extends Exception{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 		private int ID;
 		private String msg;
 		public String toString(){
