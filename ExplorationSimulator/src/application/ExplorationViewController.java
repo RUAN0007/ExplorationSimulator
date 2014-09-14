@@ -13,8 +13,6 @@ import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.omg.CORBA.FREE_MEM;
-
 import Model.Block;
 import Model.Cell;
 import Model.CustomizedArena;
@@ -22,9 +20,7 @@ import Model.CustomizedArena.ArenaException;
 import Model.ExplorationModel;
 import Model.FastestPathComputer;
 import Model.MinStepTurnPathComputer;
-import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -242,7 +238,11 @@ public class ExplorationViewController implements Initializable{
 		int rowIndex = computeArenaRowIndex(yCdn);
 		int columnIndex = computeArenaColumnIndex(xCdn);
 
-		Robot robot = new Robot(rowIndex,columnIndex,GlobalUtil.robotDiameterInCellNumber,Model.Orientation.NORTH);
+		Robot robot = new Robot(rowIndex,
+								columnIndex,
+								GlobalUtil.robotDiameterInCellNumber,
+								Model.Orientation.NORTH,
+								GlobalUtil.explorationRange);
 		if(!this.model.setRobot(robot)){
 			this.setMessageBoxText("Can not put the robot here");
 			return;
@@ -439,6 +439,10 @@ public class ExplorationViewController implements Initializable{
 	  @FXML 
 	  void onDescriptorSaved(){
 		  
+		  if(this.model == null) {
+			  this.setMessageBoxText("The model is null");
+			  return;
+		  }
 		  String description = this.model.getExploredDescriptor();
 		  
 		  FileChooser fileChooser = getMapDescriptorFileChooser();

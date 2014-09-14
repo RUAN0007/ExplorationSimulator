@@ -1,6 +1,7 @@
 package Model;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import Model.ArenaTemplate.CellState;
 import Model.CustomizedArena.ArenaException;
@@ -17,6 +18,8 @@ public class ExplorationModel {
 	private Block robotInitSouthWestBlock;
 	private Orientation robotInitStartOrientation;
 	private Cell[][] status;
+	private boolean[][] pseudoObstacleExists;
+	
 
 	public ExplorationModel(CustomizedArena realMap,
 			FastestPathComputer pathComputer, Block startBlock, Block goalBlock) {
@@ -29,13 +32,25 @@ public class ExplorationModel {
 		this.actions = new ArrayList<>();
 		this.initExploredMap(this.exploredMap.getRowCount(),this.exploredMap.getColumnCount());
 		this.status = new Cell[this.exploredMap.getRowCount()][this.exploredMap.getColumnCount()];
+		this.initPseudoObstacle();
 		this.updateStatus();
+	}
+
+	private void initPseudoObstacle() {
+		int rowCount = this.realMap.getRowCount();
+		int colCount = this.realMap.getColumnCount();
+		this.pseudoObstacleExists = new boolean[rowCount][colCount];
+		for(int rowID = 0;rowID < rowCount ; rowID++){
+			for(int colID = 0;colID < colCount;colID++){
+				this.pseudoObstacleExists[rowID][colID] = false;
+			}
+		}
 	}
 
 	private void updateStatus() {
 		updateForArenaMap();
-		updateForStart();
-		updateForGoal();
+//		updateForStart();
+//		updateForGoal();
 		updateForRobot();
 	}
 	
@@ -68,6 +83,7 @@ public class ExplorationModel {
 		}
 	}
 		
+	//Update the current status based on what the robot has explored
 	private void updateForArenaMap() {
 		for(int rowID = 0;rowID < this.exploredMap.getRowCount();rowID++){
 			for(int colID = 0;colID < this.exploredMap.getColumnCount();colID++){
@@ -145,7 +161,7 @@ public class ExplorationModel {
 			this.exploredMap.setDescriptor("C000000000000000000000000000000000000000000000000000000000000000000000000003");
 
 		} catch (ArenaException e) {
-			// TODO Auto-generated catch block
+			assert(false):"Should not reach here...";
 			e.printStackTrace();
 		}
 	}
@@ -189,12 +205,14 @@ public class ExplorationModel {
 		int columnCount = this.realMap.getColumnCount();
 	
 		this.initExploredMap(rowCount, columnCount);
-		
+		initPseudoObstacle();
 		
 		int diameterInCellNum = this.robot.getDiameterInCellNum();
+		int explorationRange = this.robot.getExplorationRange();
 		Robot newRobot = new Robot(this.robotInitSouthWestBlock.clone(),
 								   diameterInCellNum, 
-								   this.robotInitStartOrientation);
+								   this.robotInitStartOrientation.clone(),
+								   explorationRange);
 		initRobot(newRobot);
 		
 		this.actions.clear();
@@ -224,6 +242,9 @@ public class ExplorationModel {
 		if(isFinished()) return null;
 		
 		Action next = getNextStep();
+		if(next.equals(Action.MOVE_FORWARD)) {
+			markBorderAsPseudoObstacle(Direction.LEFT);
+		}
 		robot.move(next);
 		explore();
 		updateStatus();
@@ -233,10 +254,154 @@ public class ExplorationModel {
 		
 	}
 	
+	//Mark the cell occupied by the robot's left border as pseudo obstacles
+	private void markBorderAsPseudoObstacle(Direction direction) {
+		int robotDiamterInCellNum = this.robot.getDiameterInCellNum();
+		Orientation borderOrientation = this.robot.getCurrentOrientation().relativeToLeft();
+
+		if(borderOrientation.equals(Orientation.NORTH)){
+			int rowID = this.robot.getSouthWestBlock().getRowID() - robotDiamterInCellNum + 1;
+			for(int colOffset = 0;colOffset < robotDiamterInCellNum;colOffset++){
+				int colID = this.robot.getSouthWestBlock().getColID() + colOffset;			
+				this.pseudoObstacleExists[rowID][colID] = true;
+			}
+		}else if(borderOrientation.equals(Orientation.EAST)){
+			int colID = this.robot.getSouthWestBlock().getColID() + robotDiamterInCellNum - 1;
+			for(int rowOffset = 0;rowOffset < robotDiamterInCellNum;rowOffset++){
+				int rowID = this.robot.getSouthWestBlock().getRowID() - rowOffset;
+				this.pseudoObstacleExists[rowID][colID] = true;
+			}
+		}else if(borderOrientation.equals(Orientation.SOUTH)){
+			int rowID = this.robot.getSouthWestBlock().getRowID();
+			for(int colOffset = 0;colOffset < robotDiamterInCellNum;colOffset++){
+				int colID = this.robot.getSouthWestBlock().getColID() + colOffset;
+				this.pseudoObstacleExists[rowID][colID] = true;
+			}
+		}else if(borderOrientation.equals(Orientation.WEST)){
+			int colID = this.robot.getSouthWestBlock().getColID();
+			for(int rowOffset = 0;rowOffset < robotDiamterInCellNum;rowOffset++){
+				int rowID = this.robot.getSouthWestBlock().getRowID() - rowOffset;
+				this.pseudoObstacleExists[rowID][colID] = true;
+
+			}
+		}else{
+			assert(false):"No other orientation";
+		}
+	}
+
+	private LinkedList<Action> nextActions = new LinkedList<Action>();
+	private boolean exploreStage = false;
+	
+	private Action getNextStep(){
+		if(nextActions.size() == 0){
+			if(exploreStage){
+				exploreStage = false;
+				
+				nextActions.add(Action.TURN_LEFT);
+				nextActions.add(Action.TURN_RIGHT);
+				nextActions.add(Action.TURN_RIGHT);
+				nextActions.add(Action.TURN_LEFT);
+			}else{
+				exploreStage = true;
+				
+				boolean moved = false;
+				Orientation robotOrientation = this.robot.getCurrentOrientation();
+			
+				if(canMoveTowards(robotOrientation.relativeToLeft())){
+					nextActions.add(Action.TURN_LEFT);
+					nextActions.add(Action.MOVE_FORWARD);
+					moved = true;
+				}
+				if(!moved && canMoveTowards(robotOrientation)){
+					nextActions.add(Action.MOVE_FORWARD);
+					moved = true;
+				}
+				
+				if(!moved && canMoveTowards(robotOrientation.relativeToRight())){
+					nextActions.add(Action.TURN_RIGHT);
+					nextActions.add(Action.MOVE_FORWARD);
+					moved = true;
+				}
+				if(!moved){
+					nextActions.add(Action.TURN_RIGHT);
+					nextActions.add(Action.TURN_RIGHT);
+				}
+			}
+		}
+				
+		return nextActions.pollFirst();
+	}
+	
+	private boolean canMoveTowards(Orientation ori){
+		if(ori.equals(Orientation.NORTH)) return canMoveNorth();
+		if(ori.equals(Orientation.WEST)) return canMoveWest();
+		if(ori.equals(Orientation.SOUTH)) return canMoveSouth();
+		if(ori.equals(Orientation.EAST)) return canMoveEast();
+		assert(false):"no other orientaion...";
+		return false;
+	}
+
+	
+	private boolean canMoveNorth() {
+		int robotDiamterInCellNum = this.robot.getDiameterInCellNum();
+		int rowID = this.robot.getSouthWestBlock().getRowID() - robotDiamterInCellNum;
+		for(int colOffset = 0;colOffset < robotDiamterInCellNum;colOffset++){
+			int colID = this.robot.getSouthWestBlock().getColID() + colOffset;
+			if (!withInArenaRange(rowID, colID)) return false;
+			assert(this.exploredMap.getCell(rowID, colID) != CellState.UNEXPLORED);
+
+			if(this.exploredMap.getCell(rowID, colID) == CellState.OBSTACLE) return false;
+			if(this.pseudoObstacleExists[rowID][colID]) return false;
+		}
+		return true;
+	}
+	
+	private boolean canMoveEast() {
+		int robotDiamterInCellNum = this.robot.getDiameterInCellNum();
+		int colID = this.robot.getSouthWestBlock().getColID() + robotDiamterInCellNum;
+		for(int rowOffset = 0;rowOffset < robotDiamterInCellNum;rowOffset++){
+			int rowID = this.robot.getSouthWestBlock().getRowID() - rowOffset;
+			if (!withInArenaRange(rowID, colID)) return false;
+			assert(this.exploredMap.getCell(rowID, colID) != CellState.UNEXPLORED);
+			if(this.exploredMap.getCell(rowID, colID) == CellState.OBSTACLE) return false;
+			if(this.pseudoObstacleExists[rowID][colID]) return false;
+		}
+		return true;
+	}
+	
+	private boolean canMoveWest() {
+		int robotDiamterInCellNum = this.robot.getDiameterInCellNum();
+		int colID = this.robot.getSouthWestBlock().getColID() - 1;
+		for(int rowOffset = 0;rowOffset < robotDiamterInCellNum;rowOffset++){
+			int rowID = this.robot.getSouthWestBlock().getRowID() - rowOffset;
+			if (!withInArenaRange(rowID, colID)) return false;
+			assert(this.exploredMap.getCell(rowID, colID) != CellState.UNEXPLORED);
+
+			if(this.exploredMap.getCell(rowID, colID) == CellState.OBSTACLE) return false;
+			if(this.pseudoObstacleExists[rowID][colID]) return false;
+		}
+		return true;
+	}
+	
+	private boolean canMoveSouth() {
+		int robotDiamterInCellNum = this.robot.getDiameterInCellNum();
+		int rowID = this.robot.getSouthWestBlock().getRowID() + 1;
+		for(int colOffset = 0;colOffset < robotDiamterInCellNum;colOffset++){
+			int colID = this.robot.getSouthWestBlock().getColID() + colOffset;
+			if (!withInArenaRange(rowID, colID)) return false;
+			assert(this.exploredMap.getCell(rowID, colID) != CellState.UNEXPLORED);
+
+			if(this.exploredMap.getCell(rowID, colID) == CellState.OBSTACLE) return false;
+			if(this.pseudoObstacleExists[rowID][colID]) return false;
+		}
+		return true;
+	}
+
 	public boolean isFinished() {
 		if(robot == null) return false;
 		if(getCoverage() < 1.0) return false;
-		if(!this.robot.getSouthWestBlock().equals(goalSouthWestBlock)) return false;
+	//TODO
+		//	if(!this.robot.getSouthWestBlock().equals(goalSouthWestBlock)) return false;
 		return true;
 	}
 
@@ -251,21 +416,108 @@ public class ExplorationModel {
 				}
 			}
 		}
-		return (double)unExploredCount/(double)totalCount;
-		
+		double coverageRate =  (double)unExploredCount/(double)totalCount;
+		assert(-0.1 < coverageRate && coverageRate < 1.1):"Illegail Coverage: " + coverageRate;
+		return coverageRate;
 	}
 
 	public String getExploredDescriptor(){
 		return this.exploredMap.getDescriptors();
 	}
 	
-	private Action getNextStep(){
-		//TODO
-		return null;
+	
+	
+	
+	//Explore the front explorationRange * explorationRange block along the direction
+	private void explore(){
+		
+		int robotLeftFrontRowID;
+		int robotLeftFrontColID;
+		
+		int robotRightFrontRowID;
+		int robotRightFrontColID;
+		
+		int robotDiameterInCellNum = this.robot.getDiameterInCellNum();
+		int robotExplorationRange = this.robot.getExplorationRange();
+		if(this.robot.getCurrentOrientation().equals(Orientation.NORTH)){
+			robotLeftFrontRowID = this.robot.getSouthWestBlock().getRowID() - robotDiameterInCellNum + 1;
+			robotLeftFrontColID = this.robot.getSouthWestBlock().getColID();
+			robotRightFrontRowID = robotLeftFrontRowID;
+			robotRightFrontColID = robotLeftFrontColID + robotDiameterInCellNum - 1;
+			
+			for(int colID = robotLeftFrontColID;colID <= robotRightFrontRowID;colID++){
+				for(int rowOffset = 1;rowOffset <= robotExplorationRange;rowOffset++){
+					int rowID = robotLeftFrontRowID - rowOffset;
+					if(!withInArenaRange(rowID, colID)) break;
+					this.exploreBlock(rowID, colID);
+					if(this.exploredMap.getCell(rowID, colID) == CellState.OBSTACLE) break;
+				}
+			}
+		}else if(this.robot.getCurrentOrientation().equals(Orientation.EAST)){
+			robotLeftFrontRowID = this.robot.getSouthWestBlock().getRowID() - robotDiameterInCellNum + 1;
+			robotLeftFrontColID = this.robot.getSouthWestBlock().getColID() + robotDiameterInCellNum - 1;
+			robotRightFrontRowID = this.robot.getSouthWestBlock().getRowID();
+			robotRightFrontColID = robotLeftFrontColID;
+			
+			for(int rowID = robotLeftFrontRowID;rowID <= robotRightFrontRowID;rowID++){
+				for(int colOffset = 1;colOffset <= robotExplorationRange;colOffset++){
+					int colID = robotLeftFrontColID + colOffset;
+					if(!withInArenaRange(rowID, colID)) break;
+					this.exploreBlock(rowID, colID);
+					if(this.exploredMap.getCell(rowID, colID) == CellState.OBSTACLE) break;
+				
+				}
+			}
+			
+		}else if(this.robot.getCurrentOrientation().equals(Orientation.SOUTH)){
+			robotLeftFrontRowID = this.robot.getSouthWestBlock().getRowID();
+			robotLeftFrontColID = this.robot.getSouthWestBlock().getColID() + robotDiameterInCellNum - 1;
+			robotRightFrontRowID = robotLeftFrontRowID;
+			robotRightFrontColID = this.robot.getSouthWestBlock().getColID();
+			
+			for(int colID = robotRightFrontColID; colID <= robotLeftFrontColID;colID++){
+				for(int rowOffset = 1;rowOffset <= robotExplorationRange;rowOffset++){
+					int rowID = robotLeftFrontColID + rowOffset;
+					
+					if(!withInArenaRange(rowID, colID)) break;
+					this.exploreBlock(rowID, colID);
+					if(this.exploredMap.getCell(rowID, colID) == CellState.OBSTACLE) break;
+				
+				}
+			}
+		}else if(this.robot.getCurrentOrientation().equals(Orientation.WEST)){
+			robotLeftFrontRowID = this.robot.getSouthWestBlock().getRowID();
+			robotRightFrontRowID = robotLeftFrontRowID - robotDiameterInCellNum + 1;
+			robotLeftFrontColID = this.robot.getSouthWestBlock().getColID();
+			robotRightFrontColID = robotLeftFrontColID;
+			
+			for(int rowID = robotRightFrontRowID;rowID <= robotLeftFrontRowID;rowID++){
+				for(int colOffset = 1;colOffset <= robotExplorationRange;colOffset++){
+					int colID = robotLeftFrontColID - colOffset;
+					if(!withInArenaRange(rowID, colID)) break;
+					this.exploreBlock(rowID, colID);
+					if(this.exploredMap.getCell(rowID, colID) == CellState.OBSTACLE) break;
+				
+				}
+			}
+			
+		}else{
+			assert(false):"No other ORIENTAIN AVAILABLE...";
+		}
 	}
 	
-	private void explore(){
-		//TODO
+	private void exploreBlock(int rowID,int colID){
+		CellState cellState = this.realMap.getCell(rowID, colID);
+		this.exploredMap.setCellState(rowID, colID, cellState);
+	}
+	
+	private boolean withInArenaRange(int rowID,int colID){
+		int rowCount = this.realMap.getRowCount();
+		int colCount = this.realMap.getColumnCount();
+		
+		if(rowID < 0 || rowID >= rowCount) return false;
+		if(colID < 0 || colID >= colCount) return false;
+		return true;
 	}
 	
 	public int getCurrentTurnCount(){

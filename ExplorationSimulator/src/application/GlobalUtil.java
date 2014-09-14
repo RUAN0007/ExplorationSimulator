@@ -23,4 +23,7 @@ public class GlobalUtil {
 	
 	public static int indexFont = rowCount / 2;
 	
+	public static int explorationRange = 3;
+	
+	
 }

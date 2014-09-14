@@ -5,20 +5,21 @@ public class Robot {
 	private Block southWestBlock;
 	private int diameterInCellNum;
 	private Orientation currentOrientation;
+	private int explorationRange;
 	
-	
-	public Robot(Block southWestBlock,int diameterInCellNum, Orientation currentOrientation){
+	public Robot(Block southWestBlock,int diameterInCellNum, Orientation currentOrientation,int explorationRange){
 		this.southWestBlock = southWestBlock;
 		this.diameterInCellNum = diameterInCellNum;
 		this.currentOrientation = currentOrientation;
+		this.explorationRange = explorationRange;
 	}
 	
 	public Robot(int southWestRowIndex, int southWestColIndex,
-			int diameterInCellNum, Orientation currentOrientation) {
-		super();
-		this.southWestBlock = new Block(southWestRowIndex, southWestColIndex);
-		this.diameterInCellNum = diameterInCellNum;
-		this.currentOrientation = currentOrientation;
+			int diameterInCellNum, Orientation currentOrientation,int explorationRange) {
+		 this.southWestBlock = new Block(southWestRowIndex, southWestColIndex);
+		 this.diameterInCellNum = diameterInCellNum;
+			this.currentOrientation = currentOrientation;
+			this.explorationRange = explorationRange;
 	}
 	
 	
@@ -39,6 +40,10 @@ public class Robot {
 //		this.southWestBlock = new Block(southWestRowID, southWestColIndex);
 //	}
 	
+	public int getExplorationRange() {
+		return explorationRange;
+	}
+
 	public Block getSouthWestBlock() {
 		return southWestBlock;
 	}
