@@ -48,8 +48,8 @@ public class ExplorationModel {
 
 	private void updateStatus() {
 		updateForArenaMap();
-//		updateForStart();
-//		updateForGoal();
+		updateForStart();
+		updateForGoal();
 		updateForRobot();
 	}
 	
@@ -220,6 +220,7 @@ public class ExplorationModel {
 		initRobot(newRobot);
 		
 		this.actions.clear();
+		updateStatus();
 	}
 
 	private boolean obstacleInArea(int southWestRowID,
@@ -435,7 +436,7 @@ public class ExplorationModel {
 				}
 			}
 		}
-		double coverageRate =  (double)unExploredCount/(double)totalCount;
+		double coverageRate = 1.0 -  (double)unExploredCount/(double)totalCount;
 		assert(-0.1 < coverageRate && coverageRate < 1.1):"Illegail Coverage: " + coverageRate;
 		return coverageRate;
 	}

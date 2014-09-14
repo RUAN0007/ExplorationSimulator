@@ -411,7 +411,7 @@ public class ExplorationViewController implements Initializable{
 	  private String getTestDescriptor(){
 		  return "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
 				  "\n" +
-				  "00400080010000000000003F0400000000000001000401000000000380000000080010002000";
+				  "000000000400000001C800000000000700000000800000001F80000700000000020000000000";
 	  }
 	  
 	  @FXML
@@ -482,7 +482,7 @@ public class ExplorationViewController implements Initializable{
 		  this.refreshView();
 	  }
 	  
-	  private static int TimerPeriodInMS = 500;
+	  private static int TimerPeriodInMS = 250;
 	  
 	  Timer timer;
 	  private int executionCount = 0;
@@ -497,7 +497,9 @@ public class ExplorationViewController implements Initializable{
 				this.startpausedButton.setText("Pause");
 
 				
-				int msPerStep = 1000 * (int)Double.parseDouble(this.secondsPerStepChoiceBox.getValue());
+				int msPerStep = (int)(1000 * Double.parseDouble(this.secondsPerStepChoiceBox.getValue()));
+				//TODO
+			//	System.out.println("sPerStep = " + Double.parseDouble(this.secondsPerStepChoiceBox.getValue()));
 				double coverageLimit = Double.parseDouble(this.coverageLimitChoiceBox.getValue()) / 100.0;
 				int timeLimitInS = 0;
 				try{
@@ -570,7 +572,8 @@ public class ExplorationViewController implements Initializable{
 		  this.executionCount = 0;
 		   this.secondsPerStepChoiceBox.setDisable(false);
 			this.timeLimitChoiceBox.setDisable(false);
-
+			this.startpausedButton.setSelected(false);
+			this.startpausedButton.setText("Start");
 			this.coverageLimitChoiceBox.setDisable(false);
 			this.startpausedButton.setDisable(false);
 			this.resetButton.setDisable(false);
