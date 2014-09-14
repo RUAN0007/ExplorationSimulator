@@ -134,5 +134,10 @@
             <Font size="20.0" />
          </font>
       </Label>
+      <ToggleButton layoutX="572.0" layoutY="342.0" mnemonicParsing="false" onAction="#forward" prefHeight="39.0" prefWidth="162.0" text="Forward" textAlignment="CENTER">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </ToggleButton>
    </children>
 </AnchorPane>

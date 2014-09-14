@@ -123,7 +123,6 @@ public class ExplorationViewController implements Initializable{
 		this.coverageLimitChoiceBox.setDisable(true);
 		this.startpausedButton.setDisable(true);
 		this.resetButton.setDisable(true);
-		refreshView();
 
 	}
 
@@ -157,7 +156,7 @@ public class ExplorationViewController implements Initializable{
 		timeLimitChoiceBox.getItems().add("90");
 		timeLimitChoiceBox.getItems().add("120");
 		timeLimitChoiceBox.getItems().add("N.A.");
-		timeLimitChoiceBox.setValue("30");
+		timeLimitChoiceBox.setValue("N.A.");
 //		timeLimitChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
 //			public void changed(javafx.beans.value.ObservableValue<? extends String> observable, String oldValue, String newValue) {
 //				//TODO
@@ -167,11 +166,13 @@ public class ExplorationViewController implements Initializable{
 	}
 
 	private void initSecondPerStepChoiceBox() {
+		secondsPerStepChoiceBox.getItems().add("0.25");
 		secondsPerStepChoiceBox.getItems().add("0.5");
 		secondsPerStepChoiceBox.getItems().add("1");
 		secondsPerStepChoiceBox.getItems().add("2");
-		secondsPerStepChoiceBox.setValue("1");
+		secondsPerStepChoiceBox.setValue("0.25");
 	}
+	
 	
 	private void addBlocks() {
 		recs = new Rectangle[GlobalUtil.rowCount][GlobalUtil.columnCount];
@@ -406,13 +407,21 @@ public class ExplorationViewController implements Initializable{
 			}
 		}
 	  
+	  //TODO DEUG
+	  private String getTestDescriptor(){
+		  return "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
+				  "\n" +
+				  "00400080010000000000003F0400000000000001000401000000000380000000080010002000";
+	  }
+	  
 	  @FXML
 	  public void onDescriptorLoaded(){
 			if(GlobalUtil.ViewDEBUG){
 				System.out.println("onDescriptorLoaded");
 			}
 			
-			String descriptor = getDescriptorFromFile();
+			//TODO DEBUG
+			String descriptor = getTestDescriptor();
 			CustomizedArena realMap = null;
 			try {
 				realMap = new CustomizedArena(GlobalUtil.rowCount, GlobalUtil.columnCount);
@@ -461,11 +470,23 @@ public class ExplorationViewController implements Initializable{
 			}
 	  }
 	  
+	  //TODO DEBUG
+	  @FXML
+	  public void forward(){
+		  if(this.model.isFinished()) {
+			  this.setMessageBoxText("Finish");
+		  }
+		  String desc = this.model.forward();
+		  this.setMessageBoxText(desc);
+		  
+		  this.refreshView();
+	  }
+	  
 	  private static int TimerPeriodInMS = 500;
 	  
-	  @FXML
 	  Timer timer;
 	  private int executionCount = 0;
+	  @FXML
 	public void onStartPausedPressed(ActionEvent e ){
 			if (startpausedButton.isSelected()){
 				//Start button is pressed
