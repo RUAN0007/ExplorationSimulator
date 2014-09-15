@@ -431,10 +431,9 @@ public class ExplorationViewController implements Initializable{
 				setMessageBoxText(e.getMessage());
 			}
 			
-			FastestPathComputer pathComputer = new MinStepTurnPathComputer(1,1);
 			Block startBlock = new Block(GlobalUtil.southWestStartRowIndex,GlobalUtil.southWestStartColIndex);
 			Block goalBlock = new Block(GlobalUtil.southWestGoalRowIndex,GlobalUtil.southWestGoalColIndex);
-			this.model = new ExplorationModel(realMap, pathComputer, startBlock, goalBlock);
+			this.model = new ExplorationModel(realMap, startBlock, goalBlock);
 			
 			isReset = true;
 			setMessageBoxText("Click the arena for the robot's initial position...");
