@@ -124,7 +124,7 @@ public class CustomizedArena {
 				int rowID = rowScale * templateRowID;
 				int colID = colScale * templateColID;
 				CellState cellState = this.cells[rowID][colID];
-				this.template.setCellState(templateRowID, templateRowID, cellState);
+				this.template.setCellState(templateRowID, templateColID, cellState);
 			}
 		}
 	}

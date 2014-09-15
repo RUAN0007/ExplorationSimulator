@@ -13,13 +13,12 @@ import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
 
+
 import Model.Block;
 import Model.Cell;
 import Model.CustomizedArena;
 import Model.CustomizedArena.ArenaException;
 import Model.ExplorationModel;
-import Model.FastestPathComputer;
-import Model.MinStepTurnPathComputer;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -144,7 +143,6 @@ public class ExplorationViewController implements Initializable{
 
 //		coverageLimitChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
 //			public void changed(javafx.beans.value.ObservableValue<? extends String> observable, String oldValue, String newValue) {
-//				//TODO
 //				onResetPressed(null);
 //			};
 //		});
@@ -159,7 +157,6 @@ public class ExplorationViewController implements Initializable{
 		timeLimitChoiceBox.setValue("N.A.");
 //		timeLimitChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
 //			public void changed(javafx.beans.value.ObservableValue<? extends String> observable, String oldValue, String newValue) {
-//				//TODO
 //				onResetPressed(null);
 //			};
 //		});
@@ -407,12 +404,12 @@ public class ExplorationViewController implements Initializable{
 			}
 		}
 	  
-	  //TODO DEUG
-	  private String getTestDescriptor(){
-		  return "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
-				  "\n" +
-				  "000000000400000001C800000000000700000000800000001F80000700000000020000000000";
-	  }
+//	  //TODO DEUG
+//	  private String getTestDescriptor(){
+//		  return "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" +
+//				  "\n" +
+//				  "0400000800000201C00002000400080010202040408001000200040000380400000100000200";
+//	  }
 	  
 	  @FXML
 	  public void onDescriptorLoaded(){
@@ -420,8 +417,7 @@ public class ExplorationViewController implements Initializable{
 				System.out.println("onDescriptorLoaded");
 			}
 			
-			//TODO DEBUG
-			String descriptor = getTestDescriptor();
+			String descriptor = getDescriptorFromFile();
 			CustomizedArena realMap = null;
 			try {
 				realMap = new CustomizedArena(GlobalUtil.rowCount, GlobalUtil.columnCount);
@@ -436,6 +432,7 @@ public class ExplorationViewController implements Initializable{
 			this.model = new ExplorationModel(realMap, startBlock, goalBlock);
 			
 			isReset = true;
+			refreshView();
 			setMessageBoxText("Click the arena for the robot's initial position...");
 			
 	  }
@@ -469,17 +466,17 @@ public class ExplorationViewController implements Initializable{
 			}
 	  }
 	  
-	  //TODO DEBUG
-	  @FXML
-	  public void forward(){
-		  if(this.model.isFinished()) {
-			  this.setMessageBoxText("Finish");
-		  }
-		  String desc = this.model.forward();
-		  this.setMessageBoxText(desc);
-		  
-		  this.refreshView();
-	  }
+//	  //TODO DEBUG
+//	  @FXML
+//	  public void forward(){
+//		  if(this.model.isFinished()) {
+//			  this.setMessageBoxText("Finish");
+//		  }
+//		  String desc = this.model.forward();
+//		  this.setMessageBoxText(desc);
+//		  
+//		  this.refreshView();
+//	  }
 	  
 	  private static int TimerPeriodInMS = 250;
 	  
@@ -497,8 +494,6 @@ public class ExplorationViewController implements Initializable{
 
 				
 				int msPerStep = (int)(1000 * Double.parseDouble(this.secondsPerStepChoiceBox.getValue()));
-				//TODO
-			//	System.out.println("sPerStep = " + Double.parseDouble(this.secondsPerStepChoiceBox.getValue()));
 				double coverageLimit = Double.parseDouble(this.coverageLimitChoiceBox.getValue()) / 100.0;
 				int timeLimitInS = 0;
 				try{
@@ -559,8 +554,10 @@ public class ExplorationViewController implements Initializable{
 				startpausedButton.setText("Start");
 
 				setMessageBoxText("Pause");
-				startpausedButton.setDisable(true);
 				resetButton.setDisable(false);
+				this.coverageLimitChoiceBox.setDisable(false);
+				this.secondsPerStepChoiceBox.setDisable(false);
+				this.timeLimitChoiceBox.setDisable(false);
 			}
 	 }
   

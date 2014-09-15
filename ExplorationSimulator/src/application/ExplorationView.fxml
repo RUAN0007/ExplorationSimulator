@@ -114,12 +114,12 @@
             <Font size="20.0" />
          </font>
       </Label>
-      <Label fx:id="timeLabel" layoutX="748.0" layoutY="49.0" text="-" textAlignment="RIGHT">
+      <Label fx:id="timeLabel" layoutX="726.0" layoutY="48.0" text="-" textAlignment="RIGHT">
          <font>
             <Font size="20.0" />
          </font>
       </Label>
-      <Label fx:id="currentCoverageLabel" layoutX="749.0" layoutY="87.0" text="-" textAlignment="RIGHT">
+      <Label fx:id="currentCoverageLabel" layoutX="727.0" layoutY="86.0" text="-" textAlignment="RIGHT">
          <font>
             <Font size="20.0" />
          </font>
@@ -134,10 +134,10 @@
             <Font size="20.0" />
          </font>
       </Label>
-      <ToggleButton layoutX="572.0" layoutY="342.0" mnemonicParsing="false" onAction="#forward" prefHeight="39.0" prefWidth="162.0" text="Forward" textAlignment="CENTER">
+     <!--  <ToggleButton layoutX="572.0" layoutY="342.0" mnemonicParsing="false" onAction="#forward" prefHeight="39.0" prefWidth="162.0" text="Forward" textAlignment="CENTER">
          <font>
             <Font size="20.0" />
          </font>
-      </ToggleButton>
+      </ToggleButton> -->
    </children>
 </AnchorPane>

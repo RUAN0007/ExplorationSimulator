@@ -22,13 +22,13 @@ public class Orientation{
 	public String toString(){
 		switch(this.dirSymbol){
 			case 0:
-				return "UP";
+				return "NORTH";
 			case 1:
-				return "RIGHT";
+				return "EAST";
 			case 2:
-				return "DOWN";
+				return "SOUTH";
 			case 3:
-				return "RIGHT";
+				return "WEST";
 			default:
 				return "NULL";
 		}

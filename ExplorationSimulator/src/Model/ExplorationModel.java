@@ -1,10 +1,8 @@
 package Model;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 import Model.ArenaTemplate.CellState;
-import Model.CustomizedArena.ArenaException;
 import Model.ExplorationComputer.ExplorationEnvironment;
 
 public class ExplorationModel implements ExplorationEnvironment{
@@ -16,27 +14,33 @@ public class ExplorationModel implements ExplorationEnvironment{
 	private Block goalSouthWestBlock;
 	private Block robotInitSouthWestBlock;
 	private Orientation robotInitStartOrientation;
+	private FastestPathComputer pathComputer = new MinStepTurnPathComputer(1, 1);
 	private ExplorationComputer explorationComputer;
 	private Cell[][] status;
-
+	
 	public ExplorationModel(CustomizedArena realMap, Block startBlock, Block goalBlock) {
 		super();
 		
 		this.realMap = realMap;
 		this.startSouthWestBlock = startBlock;
 		this.goalSouthWestBlock = goalBlock;
-		
+	
 		this.actions = new ArrayList<>();
 		this.explorationComputer = new ExplorationComputer(this.realMap.getRowCount(),this.realMap.getColumnCount(),this);
 		this.status = new Cell[this.realMap.getRowCount()][this.realMap.getColumnCount()];
+		updateStatus();
 	}
 
 
 	private void updateStatus() {
 		Cell[][] mapStatus = this.explorationComputer.getExploredStatus();
-		updateForStart(mapStatus);
-		updateForGoal(mapStatus);
-		updateForRobot(mapStatus);
+		if(robot != null){
+
+			updateForStart(mapStatus);
+			updateForGoal(mapStatus);
+			updateForRobot(mapStatus);
+
+		}
 		this.status = mapStatus;
 	}
 	
@@ -128,7 +132,7 @@ public class ExplorationModel implements ExplorationEnvironment{
 	
 	
 	public boolean setRobot(Robot robot){
-		if(obstacleInArea(robot.getSouthWestBlock().getRowID(),
+		if(!availableArea(robot.getSouthWestBlock().getRowID(),
 						robot.getSouthWestBlock().getColID(),
 						robot.getDiameterInCellNum())){
 			return false;
@@ -170,38 +174,64 @@ public class ExplorationModel implements ExplorationEnvironment{
 		initRobot(newRobot);
 		
 		this.actions.clear();
+		this.explorationComputer.explore();
 		updateStatus();
 	}
 
-	private boolean obstacleInArea(int southWestRowID,
+	private boolean availableArea(int southWestRowID,
 			int southWestColID, int span) {
 		
-		
+		int rowCount = this.realMap.getRowCount();
+		int colCount = this.realMap.getColumnCount();
 		for(int rowID = 0;rowID < span;rowID++){
+			if(!(0 <= rowID && rowID < rowCount)){
+				return false;
+			}
+
 			for(int colID = 0;colID < span;colID++){
+				
+				if(!(0 <= colID && colID < colCount)){
+					return false;
+				}
+				
 				if(this.realMap.getCell(southWestRowID - rowID,southWestColID + colID)
 						== ArenaTemplate.CellState.OBSTACLE){
-					return true;
+					return false;
 				}
 			}
 		}
-		return false;
+		return true;
 	}
 	
 	public Cell getCellStatus(int rowID,int colID){
 		return this.status[rowID][colID];
 	}
 	
+	private ArrayList<Action> actionsToGoal = null;
 	//Return the description of the action or NULL if no action 
+	
 	public String forward(){
-		if(this.explorationComputer.isFinished(this.robot)) return null;
-		
-		Action next = this.explorationComputer.getNextStep(this.robot);
-		if(next.equals(Action.MOVE_FORWARD)) {
-			markBorderAsPseudoObstacle(Direction.LEFT);
+		Action next = null;
+		if(this.isFinished()) return null;
+		if(this.explorationComputer.getCoverage() < 0.999999){
+			next = this.explorationComputer.getNextStep(this.robot);
+			robot.move(next);
+			this.explorationComputer.explore();
+		}else{
+			//Finish exploration, move to goal
+			if(this.actionsToGoal == null){
+				this.actionsToGoal = this.pathComputer.computeForFastestPath(this.realMap,
+																			robot, 
+																			this.goalSouthWestBlock.getRowID(),
+																			this.goalSouthWestBlock.getColID());
+
+			}
+			
+			next = this.actionsToGoal.remove(0);
+			robot.move(next);
+
 		}
-		robot.move(next);
-		this.explorationComputer.explore();
+		
 		updateStatus();
 		
 		this.actions.add(next);
@@ -209,40 +239,6 @@ public class ExplorationModel implements ExplorationEnvironment{
 		
 	}
 	
-	//Mark the cell occupied by the robot's left border as pseudo obstacles
-	private void markBorderAsPseudoObstacle(Direction direction) {
-//		int robotDiamterInCellNum = this.robot.getDiameterInCellNum();
-//		Orientation borderOrientation = this.robot.getCurrentOrientation().relativeToLeft();
-//
-//		if(borderOrientation.equals(Orientation.NORTH)){
-//			int rowID = this.robot.getSouthWestBlock().getRowID() - robotDiamterInCellNum + 1;
-//			for(int colOffset = 0;colOffset < robotDiamterInCellNum;colOffset++){
-//				int colID = this.robot.getSouthWestBlock().getColID() + colOffset;			
-//				this.pseudoObstacleExists[rowID][colID] = true;
-//			}
-//		}else if(borderOrientation.equals(Orientation.EAST)){
-//			int colID = this.robot.getSouthWestBlock().getColID() + robotDiamterInCellNum - 1;
-//			for(int rowOffset = 0;rowOffset < robotDiamterInCellNum;rowOffset++){
-//				int rowID = this.robot.getSouthWestBlock().getRowID() - rowOffset;
-//				this.pseudoObstacleExists[rowID][colID] = true;
-//			}
-//		}else if(borderOrientation.equals(Orientation.SOUTH)){
-//			int rowID = this.robot.getSouthWestBlock().getRowID();
-//			for(int colOffset = 0;colOffset < robotDiamterInCellNum;colOffset++){
-//				int colID = this.robot.getSouthWestBlock().getColID() + colOffset;
-//				this.pseudoObstacleExists[rowID][colID] = true;
-//			}
-//		}else if(borderOrientation.equals(Orientation.WEST)){
-//			int colID = this.robot.getSouthWestBlock().getColID();
-//			for(int rowOffset = 0;rowOffset < robotDiamterInCellNum;rowOffset++){
-//				int rowID = this.robot.getSouthWestBlock().getRowID() - rowOffset;
-//				this.pseudoObstacleExists[rowID][colID] = true;
-//
-//			}
-//		}else{
-//			assert(false):"No other orientation";
-//		}
-	}
 
 
 	public String getExploredDescriptor(){
@@ -373,9 +369,10 @@ public class ExplorationModel implements ExplorationEnvironment{
 
 
 	public boolean isFinished() {
-		//	if(!this.robot.getSouthWestBlock().equals(goalSouthWestBlock)) return false;
+		if(this.explorationComputer.getCoverage() < 0.9999) return false;
+		if(!this.robot.getSouthWestBlock().equals(goalSouthWestBlock)) return false;
 
-		return this.explorationComputer.isFinished(this.robot);
+		return true;
 	}
 
 
