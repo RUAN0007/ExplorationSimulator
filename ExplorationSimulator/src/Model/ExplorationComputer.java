@@ -12,8 +12,9 @@ public abstract class ExplorationComputer {
 	protected CustomizedArena exploredMap;
 	protected ExplorationEnvironment env;
 
-	public ExplorationComputer() {
-		super();
+	public ExplorationComputer(int rowCount,int colCount,ExplorationEnvironment env){
+		this.initExploredMap(rowCount, colCount);
+		this.env = env;
 	}
 
 	protected void initExploredMap(int rowCount, int columnCount) {

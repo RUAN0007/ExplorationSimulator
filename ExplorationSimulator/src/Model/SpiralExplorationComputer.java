@@ -14,9 +14,9 @@ public class SpiralExplorationComputer extends ExplorationComputer {
 	
 
 	public SpiralExplorationComputer(int rowCount,int colCount,ExplorationEnvironment env){
+		super(rowCount, colCount, env);
 		this.initExploredMap(rowCount, colCount);
-		this.initPseudoObstacles(rowCount,colCount);
-		this.env = env;
+		
 	}
 
 
