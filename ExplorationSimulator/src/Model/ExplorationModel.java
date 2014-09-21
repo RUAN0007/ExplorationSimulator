@@ -26,7 +26,7 @@ public class ExplorationModel implements ExplorationEnvironment{
 		this.goalSouthWestBlock = goalBlock;
 	
 		this.actions = new ArrayList<>();
-		this.explorationComputer = new ExplorationComputer(this.realMap.getRowCount(),this.realMap.getColumnCount(),this);
+		this.explorationComputer = new SpiralExplorationComputer(this.realMap.getRowCount(),this.realMap.getColumnCount(),this);
 		this.status = new Cell[this.realMap.getRowCount()][this.realMap.getColumnCount()];
 		updateStatus();
 	}
@@ -163,7 +163,7 @@ public class ExplorationModel implements ExplorationEnvironment{
 		int rowCount = this.realMap.getRowCount();
 		int columnCount = this.realMap.getColumnCount();
 	
-		this.explorationComputer = new ExplorationComputer(rowCount, columnCount,this);
+		this.explorationComputer = new SpiralExplorationComputer(rowCount, columnCount,this);
 		
 		int diameterInCellNum = this.robot.getDiameterInCellNum();
 		int explorationRange = this.robot.getExplorationRange();
@@ -215,6 +215,7 @@ public class ExplorationModel implements ExplorationEnvironment{
 		if(this.isFinished()) return null;
 		if(this.explorationComputer.getCoverage() < 0.999999){
 			next = this.explorationComputer.getNextStep(this.robot);
+			if(next == null) return null;
 			robot.move(next);
 			this.explorationComputer.explore();
 		}else{
