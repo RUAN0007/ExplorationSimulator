@@ -48,7 +48,7 @@ public class Orientation{
 	}
 	
 	public Orientation toOppsite(){
-		return new Orientation((this.dirSymbol - OrientationCount / 2) % OrientationCount);		
+		return new Orientation((this.dirSymbol + OrientationCount / 2) % OrientationCount);		
 	}
 	
 	public Orientation clone(){
