@@ -11,17 +11,18 @@ public class SpiralExplorationComputer extends ExplorationComputer {
 	private boolean[][] pseudoObstacleExists;
 	private Block loopStartSouthWestBlock;
 	private int loopNum = 0;
-	
+
 
 	public SpiralExplorationComputer(int rowCount,int colCount,ExplorationEnvironment env){
 		super(rowCount, colCount, env);
 		this.initExploredMap(rowCount, colCount);
-		
+		this.initPseudoObstacles(rowCount, colCount);
+
 	}
 
 
 	private void initPseudoObstacles(int rowCount,int colCount) {
-	
+
 		this.pseudoObstacleExists = new boolean[rowCount][colCount];
 		for(int rowID = 0;rowID < rowCount ; rowID++){
 			for(int colID = 0;colID < colCount;colID++){
@@ -29,10 +30,10 @@ public class SpiralExplorationComputer extends ExplorationComputer {
 			}
 		}
 	}
-public Action getNextStep(Robot robot) {
-		
+	public Action getNextStep(Robot robot) {
+
 		Orientation ori = robot.getCurrentOrientation();
-		
+
 		if(nextActions.size() == 0 && robotInExploreState){
 			robotInExploreState = false;
 			Orientation robotLeftOrientation = ori.relativeToLeft();
@@ -46,38 +47,37 @@ public Action getNextStep(Robot robot) {
 				nextActions.add(Action.TURN_LEFT);
 			}
 		}
-	
+
 		if(nextActions.size() == 0 && !robotInExploreState){
 			robotInExploreState = true;
-			
-			
+
 			Direction nextDirection = Direction.NULL;
-			if(!this.hasRobotTouchedOnEdge){
+			if(!this.hasRobotLeftSideOnEdge){
 				Orientation nearestEdgeOrientation = getArenaNearestEdgeToRobot(robot);
 				if(robotOnArenaEdge(robot, nearestEdgeOrientation)){
-					
+					//Stage 2:
 					//Make sure when beginning to explore along the left wall, 
 					//The left side of the robot must have an obstacle. 
 					if(!robotOnArenaEdge(robot, robot.getCurrentOrientation().relativeToLeft())){
 						return Action.TURN_RIGHT;
 					}
-					this.hasRobotTouchedOnEdge = true;
-	
-					
+					this.hasRobotLeftSideOnEdge = true;
+
+
 				}else{
-					//Move towards the nearest edge
+					//Stage 1: Move towards the nearest edge
 					nextDirection = moveTowardsOrientation(robot, nearestEdgeOrientation);
-				
+
 				}
 			}
-			
-			if(this.hasRobotTouchedOnEdge){
-				//Exploration Stage 2: Follow the left wall
+
+			if(this.hasRobotLeftSideOnEdge){
+				//Exploration Stage 3: Follow the left wall
 				checkForLoop(robot);
 				nextDirection = computeNextDirection(robot);
-					
+
 			}
-			
+
 			if(nextDirection == Direction.LEFT){
 				nextActions.add(Action.TURN_LEFT);
 				nextActions.add(Action.MOVE_FORWARD);
@@ -93,15 +93,15 @@ public Action getNextStep(Robot robot) {
 				assert(false):"Should not reach here";
 			}
 		}
-	
-	
+
+
 		Action nextAction = nextActions.pollFirst();
-		
+
 		return nextAction;
 	}
 
-	boolean hasRobotTouchedOnEdge = false;
-	
+	boolean hasRobotLeftSideOnEdge = false;
+
 	LinkedList<Action> nextActions = new LinkedList<Action>();
 	//When exploreStage = true,robot's next steps are to turn left and right to explore the surrounding
 	//When exploreStage = false, robot's next step is to move.
@@ -112,7 +112,7 @@ public Action getNextStep(Robot robot) {
 		int distanceToEast = this.exploredMap.getColumnCount() - robot.getSouthWestBlock().getColID() - robot.getDiameterInCellNum();
 		int distanceToSouth = this.exploredMap.getRowCount() - robot.getSouthWestBlock().getRowID() + 1;
 		int distanceToWest = robot.getSouthWestBlock().getColID();
-		
+
 		if(distanceToNorth <= distanceToEast &&
 				distanceToNorth <= distanceToSouth && 
 				distanceToNorth <= distanceToWest) {
@@ -133,31 +133,31 @@ public Action getNextStep(Robot robot) {
 				distanceToWest <= distanceToNorth){ 
 			return Orientation.WEST;
 		}
-		
+
 		assert(false):"Should not reach here";
 		return null;
 	}
 
 	//For loopStartSouthWestBlock == null, a loop has not started yet.
-	
+
 	//When loopStartSouthWestBlock == null, set loopStartSouthWestBlock and start a loop 
 	//When the robot does not occupy the pseudo-obstacles
-	
-	//If a robot is about to finished a loop,
+
+	//If a robot is about to finish a loop,
 	//Then mark the outermost border block as the pseudo-obstacles
 	//Set the loopStartSouthWestBlock to null
-	void checkForLoop(Robot robot) {
+	private void checkForLoop(Robot robot) {
 		if(this.loopStartSouthWestBlock == null){
 			if(!occupyPseudoObstacles(robot)){
 				this.loopStartSouthWestBlock = robot.getSouthWestBlock().clone();
 				this.loopNum++;
-				
+
 			}
-		
+
 		}else{
-			
+
 			Block nextOccupiedSouthWestBlock = getNextOccupiedSouthWestBlock(robot);
-			
+
 			if(this.loopStartSouthWestBlock.equals(nextOccupiedSouthWestBlock)){
 				this.loopStartSouthWestBlock = null;
 				this.markPseudoObstacles();
@@ -165,14 +165,14 @@ public Action getNextStep(Robot robot) {
 		}
 	}
 
-	
-	
+
+
 	private boolean occupyPseudoObstacles(Robot robot) {
-		
+
 		int rowID = robot.getSouthWestBlock().getRowID();
 		int colID = robot.getSouthWestBlock().getColID();
 		int diameter = robot.getDiameterInCellNum();
-		
+
 		for(int rowOffset = 0;rowOffset < diameter;rowOffset++){
 			for(int colOffset = 0;colOffset < diameter;colOffset++){
 				if(pseudoObstacleExists[rowID - rowOffset][colID + colOffset]) return true;
@@ -186,7 +186,7 @@ public Action getNextStep(Robot robot) {
 		Orientation ori = robot.getCurrentOrientation();
 		int rowID = robot.getSouthWestBlock().getRowID();
 		int colID = robot.getSouthWestBlock().getColID();
-		
+
 		Block nextBlk = null;
 		if(ori.equals(Orientation.NORTH)){
 			nextBlk = new Block(rowID - 1, colID);
@@ -211,7 +211,7 @@ public Action getNextStep(Robot robot) {
 			this.pseudoObstacleExists[rowID][loopNum - 1] = true;
 			this.pseudoObstacleExists[rowID][colCount - loopNum] = true;
 		}
-		
+
 		for(int colID = 0;colID < colCount ; colID++){
 			this.pseudoObstacleExists[loopNum - 1][colID] = true;
 			this.pseudoObstacleExists[rowCount - loopNum][colID] = true;
@@ -224,11 +224,11 @@ public Action getNextStep(Robot robot) {
 				existsCellOnOrientaion(robot, ori, CellState.UNEXPLORED);
 	}
 
-//	private boolean canMove(Robot robot, Orientation ori) {
-//		return !robotOnArenaEdge(robot, ori) &&
-//				!existsCellOnOrientaion(robot, ori, CellState.OBSTACLE);
-//	}
-	
+	//	private boolean canMove(Robot robot, Orientation ori) {
+	//		return !robotOnArenaEdge(robot, ori) &&
+	//				!existsCellOnOrientaion(robot, ori, CellState.OBSTACLE);
+	//	}
+
 	//Return the direction to move towards the orientation 
 	Direction moveTowardsOrientation(Robot robot, Orientation targetOrientaiton){
 		Orientation currentOrientation = robot.getCurrentOrientation();
@@ -240,32 +240,32 @@ public Action getNextStep(Robot robot) {
 			return moveRightAheadLeft(robot);
 		}
 	}
-	
+
 	private ArrayList<Direction> prevDirections = new ArrayList<>();
 	Direction computeNextDirection(Robot robot) {
 		Orientation leftOrientation = robot.getCurrentOrientation().relativeToLeft();
 		Orientation rightOrientation = robot.getCurrentOrientation().relativeToRight();
 		Orientation aheadOrientation = robot.getCurrentOrientation().clone();
-		
+
 		if(!robotOnArenaEdge(robot, leftOrientation)) assert(!existsCellOnOrientaion(robot, leftOrientation, CellState.UNEXPLORED));
 		if(!robotOnArenaEdge(robot, rightOrientation)) assert(!existsCellOnOrientaion(robot, rightOrientation, CellState.UNEXPLORED));
 		if(!robotOnArenaEdge(robot, aheadOrientation)) assert(!existsCellOnOrientaion(robot, aheadOrientation, CellState.UNEXPLORED));
 
-//		if(canMove(robot, leftOrientation)) return Direction.LEFT;
-//		if(canMove(robot, aheadOrientation)) return Direction.AHEAD;
-//		if(canMove(robot, rightOrientation)) return Direction.RIGHT;
-		
+		//		if(canMove(robot, leftOrientation)) return Direction.LEFT;
+		//		if(canMove(robot, aheadOrientation)) return Direction.AHEAD;
+		//		if(canMove(robot, rightOrientation)) return Direction.RIGHT;
+
 		///////////////////////////////
 		//If there exists 6 consecutive previous turn, go ahead
 		if(lastSixSameDirectionTurn()) {
 			return moveRightAheadLeft(robot);	
 		}
-		
-		
-		
+
+
+
 		return moveLeftAheadRight(robot);
 	}
-	
+
 	//If the robot can move right, then move right
 	//If the robot can move ahead, then move ahead
 	//If the robot can move left, then move left
@@ -274,7 +274,7 @@ public Action getNextStep(Robot robot) {
 		Orientation leftOrientation = robot.getCurrentOrientation().relativeToLeft();
 		Orientation rightOrientation = robot.getCurrentOrientation().relativeToRight();
 
-		
+
 		////////////////////////////////////////////
 		if(!robotOnArenaEdge(robot, rightOrientation) &&
 				!existsPseudoObstacleOnOrientation(robot, rightOrientation) &&
@@ -283,9 +283,9 @@ public Action getNextStep(Robot robot) {
 
 			return Direction.RIGHT;
 		}
-		
-		
-		
+
+
+
 		if(!robotOnArenaEdge(robot, aheadOrientation) &&
 				!existsPseudoObstacleOnOrientation(robot, aheadOrientation) &&
 				!existsCellOnOrientaion(robot, aheadOrientation, CellState.OBSTACLE)){
@@ -293,15 +293,15 @@ public Action getNextStep(Robot robot) {
 
 			return Direction.AHEAD;
 		}
-	
+
 		if(!robotOnArenaEdge(robot, leftOrientation) &&
 				!existsPseudoObstacleOnOrientation(robot, leftOrientation) &&
 				!existsCellOnOrientaion(robot, leftOrientation, CellState.OBSTACLE)){
-				this.prevDirections.add(Direction.LEFT);
-				return Direction.LEFT;
-			}
+			this.prevDirections.add(Direction.LEFT);
+			return Direction.LEFT;
+		}
 		////////////////////////////////////////////////
-		
+
 		/////////////////////////////////////////////////////////////////////////////////////////
 		//Check from right to left whether exists a side without any obstacle 
 		if(!robotOnArenaEdge(robot, rightOrientation) &&
@@ -310,16 +310,16 @@ public Action getNextStep(Robot robot) {
 
 			return Direction.RIGHT;
 		}
-		
-		
+
+
 		if(!robotOnArenaEdge(robot, aheadOrientation) &&
 				!existsCellOnOrientaion(robot, aheadOrientation, CellState.OBSTACLE)){
 			this.prevDirections.add(Direction.AHEAD);
 
 			return Direction.AHEAD;
 		}
-	
-		
+
+
 		if(!robotOnArenaEdge(robot, leftOrientation) &&
 				!existsCellOnOrientaion(robot, leftOrientation, CellState.OBSTACLE)){
 			this.prevDirections.add(Direction.LEFT);
@@ -329,12 +329,12 @@ public Action getNextStep(Robot robot) {
 		////////////////////////////////////////////////
 		return Direction.BACK;
 	}
-	
+
 	//If the robot can move left, then move left. 
 	//Else If the robot can move ahead, then move ahead
 	//Else If the robot can move right, then move right
 	private Direction moveLeftAheadRight(Robot robot) {
-		
+
 		Orientation aheadOrientation = robot.getCurrentOrientation().clone();
 		Orientation leftOrientation = robot.getCurrentOrientation().relativeToLeft();
 		Orientation rightOrientation = robot.getCurrentOrientation().relativeToRight();
@@ -342,12 +342,12 @@ public Action getNextStep(Robot robot) {
 		////////////////////////////////////////////
 		//Check from left to right whether exists a side without any obstacle and pseudo-obstacle
 		if(!robotOnArenaEdge(robot, leftOrientation) &&
-			!existsPseudoObstacleOnOrientation(robot, leftOrientation) &&
-			!existsCellOnOrientaion(robot, leftOrientation, CellState.OBSTACLE)){
+				!existsPseudoObstacleOnOrientation(robot, leftOrientation) &&
+				!existsCellOnOrientaion(robot, leftOrientation, CellState.OBSTACLE)){
 			this.prevDirections.add(Direction.LEFT);
 			return Direction.LEFT;
 		}
-		
+
 		if(!robotOnArenaEdge(robot, aheadOrientation) &&
 				!existsPseudoObstacleOnOrientation(robot, aheadOrientation) &&
 				!existsCellOnOrientaion(robot, aheadOrientation, CellState.OBSTACLE)){
@@ -355,7 +355,7 @@ public Action getNextStep(Robot robot) {
 
 			return Direction.AHEAD;
 		}
-	
+
 		if(!robotOnArenaEdge(robot, rightOrientation) &&
 				!existsPseudoObstacleOnOrientation(robot, rightOrientation) &&
 				!existsCellOnOrientaion(robot, rightOrientation, CellState.OBSTACLE)){
@@ -364,7 +364,7 @@ public Action getNextStep(Robot robot) {
 			return Direction.RIGHT;
 		}
 		////////////////////////////////////////////////
-		
+
 		/////////////////////////////////////////////////////////////////////////////////////////
 		//Check from left to right whether exists a side without any obstacle 
 		if(!robotOnArenaEdge(robot, leftOrientation) &&
@@ -373,14 +373,14 @@ public Action getNextStep(Robot robot) {
 
 			return Direction.LEFT;
 		}
-		
+
 		if(!robotOnArenaEdge(robot, aheadOrientation) &&
 				!existsCellOnOrientaion(robot, aheadOrientation, CellState.OBSTACLE)){
 			this.prevDirections.add(Direction.AHEAD);
 
 			return Direction.AHEAD;
 		}
-	
+
 		if(!robotOnArenaEdge(robot, rightOrientation) &&
 				!existsCellOnOrientaion(robot, rightOrientation, CellState.OBSTACLE)){
 			this.prevDirections.add(Direction.RIGHT);
@@ -397,7 +397,7 @@ public Action getNextStep(Robot robot) {
 		Orientation rightOrientation = robot.getCurrentOrientation().relativeToRight();
 
 		////////////////////////////////////////////
-		
+
 		if(!robotOnArenaEdge(robot, aheadOrientation) &&
 				!existsPseudoObstacleOnOrientation(robot, aheadOrientation) &&
 				!existsCellOnOrientaion(robot, aheadOrientation, CellState.OBSTACLE)){
@@ -405,14 +405,14 @@ public Action getNextStep(Robot robot) {
 
 			return Direction.AHEAD;
 		}
-		
+
 		if(!robotOnArenaEdge(robot, leftOrientation) &&
-			!existsPseudoObstacleOnOrientation(robot, leftOrientation) &&
-			!existsCellOnOrientaion(robot, leftOrientation, CellState.OBSTACLE)){
+				!existsPseudoObstacleOnOrientation(robot, leftOrientation) &&
+				!existsCellOnOrientaion(robot, leftOrientation, CellState.OBSTACLE)){
 			this.prevDirections.add(Direction.LEFT);
 			return Direction.LEFT;
 		}
-	
+
 		if(!robotOnArenaEdge(robot, rightOrientation) &&
 				!existsPseudoObstacleOnOrientation(robot, rightOrientation) &&
 				!existsCellOnOrientaion(robot, rightOrientation, CellState.OBSTACLE)){
@@ -421,7 +421,7 @@ public Action getNextStep(Robot robot) {
 			return Direction.RIGHT;
 		}
 		////////////////////////////////////////////////
-		
+
 		/////////////////////////////////////////////////////////////////////////////////////////
 
 		if(!robotOnArenaEdge(robot, aheadOrientation) &&
@@ -430,15 +430,15 @@ public Action getNextStep(Robot robot) {
 
 			return Direction.AHEAD;
 		}
-	
-		
+
+
 		if(!robotOnArenaEdge(robot, leftOrientation) &&
 				!existsCellOnOrientaion(robot, leftOrientation, CellState.OBSTACLE)){
 			this.prevDirections.add(Direction.LEFT);
 
 			return Direction.LEFT;
 		}
-		
+
 		if(!robotOnArenaEdge(robot, rightOrientation) &&
 				!existsCellOnOrientaion(robot, rightOrientation, CellState.OBSTACLE)){
 			this.prevDirections.add(Direction.RIGHT);
@@ -457,14 +457,14 @@ public Action getNextStep(Robot robot) {
 		for(int preID = 1;preID < 6;preID++){
 			if(this.prevDirections.get(size - 1 - preID) != last) return false;
 		}
-		
-	//	displayPObs();
-		
+
+		//	displayPObs();
+
 		return true;
 	}
 
 
-	
+
 	private boolean existsCellOnOrientaion(Robot robot, Orientation ori,CellState state){
 		Boolean needExplore = null;
 		if(robotOnArenaEdge(robot, ori)) return false;
@@ -476,20 +476,20 @@ public Action getNextStep(Robot robot) {
 		return needExplore;
 
 	}
-	
+
 	private boolean robotOnArenaEdge(Robot robot,Orientation ori){
 		if(ori.equals(Orientation.NORTH)){
 			return robot.getSouthWestBlock().getRowID() == robot.getDiameterInCellNum() - 1;
 		}
-		
+
 		if(ori.equals(Orientation.EAST)){
 			return robot.getSouthWestBlock().getColID() == this.exploredMap.getColumnCount() - robot.getDiameterInCellNum();
 		}
-		
+
 		if(ori.equals(Orientation.SOUTH)){
 			return robot.getSouthWestBlock().getRowID() == this.exploredMap.getRowCount() - 1;
 		}
-		
+
 		if(ori.equals(Orientation.WEST)){
 			return robot.getSouthWestBlock().getColID() == 0;
 		}
@@ -507,7 +507,7 @@ public Action getNextStep(Robot robot) {
 			}
 			return false;
 		}
-		
+
 		if(ori.equals(Orientation.EAST)){
 			int colID = robot.getSouthWestBlock().getColID() + robotDiamterInCellNum;
 			for(int rowOffset = 0;rowOffset < robotDiamterInCellNum;rowOffset++){
@@ -516,7 +516,7 @@ public Action getNextStep(Robot robot) {
 			}
 			return false;
 		}
-		
+
 		if(ori.equals(Orientation.SOUTH)){
 			int rowID = robot.getSouthWestBlock().getRowID() + 1;
 			for(int colOffset = 0;colOffset < robotDiamterInCellNum;colOffset++){
@@ -525,7 +525,7 @@ public Action getNextStep(Robot robot) {
 			}
 			return false;
 		}
-		
+
 		if(ori.equals(Orientation.WEST)){
 			int colID = robot.getSouthWestBlock().getColID() - 1;
 			for(int rowOffset = 0;rowOffset < robotDiamterInCellNum;rowOffset++){
@@ -538,8 +538,8 @@ public Action getNextStep(Robot robot) {
 		assert(false):"No other direction...";
 		return false;
 	}
-	
-	
+
+
 
 	//If the north border of the robot is on the side of the arena, return null
 	private boolean existsCellOnTheNorth(Robot robot, CellState cell) {
@@ -583,5 +583,5 @@ public Action getNextStep(Robot robot) {
 		return false;
 	}
 
-	
+
 }
