@@ -24,8 +24,9 @@ public class ExplorationModel implements ExplorationEnvironment{
 		this.realMap = realMap;
 		this.startSouthWestBlock = startBlock;
 		this.goalSouthWestBlock = goalBlock;
-	
+
 		this.actions = new ArrayList<>();
+		
 		this.explorationComputer = new SpiralExplorationComputer(this.realMap.getRowCount(),this.realMap.getColumnCount(),this);
 		this.status = new Cell[this.realMap.getRowCount()][this.realMap.getColumnCount()];
 		updateStatus();
