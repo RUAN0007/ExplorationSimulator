@@ -14,29 +14,56 @@ public class ScanExplorationComputer extends ExplorationComputer{
 		super(rowCount, colCount, env);
 	}
 
-	//As the arena is scanned column by column,
-	//headingOrientation should either be NORTH or SOUTH. 
-	private Orientation headingOrientation = Orientation.NORTH;
-	private int trackColID = 0;
+	private boolean hasReachedStartBlock = false;
+	private boolean hasFacedNorthOnStartBlock = false;
+
 	@Override
 	public Action getNextStep(Robot robot) {
 		//Stage 1: Moves to start block
-		if(!robot.getSouthWestBlock().equals(startSouthWestBlock)){
+		if(!hasReachedStartBlock &&
+				!robot.getSouthWestBlock().equals(startSouthWestBlock)){
 			//TODO hardcode the orientation preferences here
 			Orientation firstOrientation = Orientation.SOUTH;
 			Orientation secondOrientation = Orientation.WEST;
 			return moveToOrientation(robot, firstOrientation, secondOrientation);
 		}
-		
-		//Stage 2: Scans the arena column by column
-		if(robotOnArenaEdge(robot, headingOrientation)){
-			headingOrientation = headingOrientation.toOppsite();
-			trackColID += robot.getDiameterInCellNum();
-			
-			//Whole arena has been explored
-			if(trackColID >= this.exploredMap.getColumnCount()) return null;
+		hasReachedStartBlock = true;
+
+		if(!hasFacedNorthOnStartBlock){
+			return Action.TURN_LEFT;
 		}
+		hasFacedNorthOnStartBlock = true;
+
+		return scanArenaColByCol(robot);
+
+
+
+	}
+	private Action preTentativeTurn = null;
+	//As the arena is scanned column by column,
+	//headingOrientation should either be NORTH or SOUTH. 
+	private Orientation headingOrientation = Orientation.NORTH;
+	private int trackColID = 0;
+
+	private Action scanArenaColByCol(Robot robot) {
 		
+		Action actionForTentativeTurn = actionForTentiveTurn(robot);
+		if(actionForTentativeTurn != null) return actionForTentativeTurn;
+
+		if(robotOnArenaEdge(robot, headingOrientation)){
+			Orientation current = robot.getCurrentOrientation();
+			if(!current.toOppsite().equals(headingOrientation)){
+				return Action.TURN_LEFT;
+			}else{
+				headingOrientation = headingOrientation.toOppsite();
+				trackColID += robot.getDiameterInCellNum();
+
+				//Whole arena has been explored
+				if(trackColID >= this.exploredMap.getColumnCount()) return null;
+			}
+			
+		}
+
 		int currentSouthWestColID = robot.getSouthWestBlock().getColID();
 		if(currentSouthWestColID < trackColID){
 			return moveToOrientation(robot, Orientation.EAST, headingOrientation);
@@ -45,11 +72,32 @@ public class ScanExplorationComputer extends ExplorationComputer{
 		}else{
 			//currentSouthWestColID > trackColID
 			return moveToOrientation(robot, Orientation.WEST, headingOrientation);
-		}
-
+		}		
 	}
 
-	
+	private Action actionForTentiveTurn(Robot robot) {
+		if(preTentativeTurn != null){
+
+			if(robotSurroundingStatus(robot, robot.getCurrentOrientation()) == 1){
+				Action newTurn = reverseTurn(preTentativeTurn);
+				preTentativeTurn = null;
+				return newTurn;
+			}else if(robotSurroundingStatus(robot, robot.getCurrentOrientation()) == 0){
+				preTentativeTurn = null;
+				return Action.MOVE_FORWARD;
+			}else{
+				assert(false):"The front cell must be explored...";
+			}
+		}
+		return null;
+	}
+
+	private static Action reverseTurn(Action turn) {
+		if(turn.equals(Action.TURN_LEFT)) return Action.TURN_RIGHT;
+		if(turn.equals(Action.TURN_RIGHT)) return Action.TURN_LEFT;
+		assert(false):"Should not reach here,only turns are allowed";
+		return null;
+	}
 
 	private Action moveToOrientation(Robot robot,Orientation firstOrientation,Orientation secondOrientation) {
 
@@ -128,21 +176,50 @@ public class ScanExplorationComputer extends ExplorationComputer{
 		assert(firstChoice != thirdChoice);
 		assert(secondChoice != thirdChoice);
 		///////////////////////////////////////////////
-		Orientation currentOrientation = robot.getCurrentOrientation();
-		Orientation firstChoiceOrientation = orientationOnDirection(currentOrientation, firstChoice);
-		Orientation secondChoiceOrientation = orientationOnDirection(currentOrientation, secondChoice);
-		Orientation thirdChoiceOrientation = orientationOnDirection(currentOrientation, thirdChoice);
+		//		Orientation currentOrientation = robot.getCurrentOrientation();
+		//		Orientation firstChoiceOrientation = orientationOnDirection(currentOrientation, firstChoice);
+		//		Orientation secondChoiceOrientation = orientationOnDirection(currentOrientation, secondChoice);
+		//		Orientation thirdChoiceOrientation = orientationOnDirection(currentOrientation, thirdChoice);
 
-		if(robotSurroundingStatus(robot, firstChoiceOrientation) <= 0){
-			return directionToAction(firstChoice);
-		}
-		if(robotSurroundingStatus(robot, secondChoiceOrientation) <= 0){
-			return directionToAction(secondChoice);
-		}
-		if(robotSurroundingStatus(robot, thirdChoiceOrientation) <= 0){
-			return directionToAction(thirdChoice);
-		}
+		Action next = moveTowardsDirection(robot, firstChoice);
+		if(next != null) return next;
+
+		next = moveTowardsDirection(robot, secondChoice);
+		if(next != null) return next;
+
+		next = moveTowardsDirection(robot, thirdChoice);
+		if(next != null) return next;
+
 		return defaultAction;
+	}
+
+	private Action moveTowardsDirection(Robot robot,
+			Direction direction) {
+
+		Action next = null;
+
+		Orientation currentOrientation = robot.getCurrentOrientation();
+		Orientation orientationOnDirection = orientationOnDirection(currentOrientation,direction);
+		int statusOnOrientation = robotSurroundingStatus(robot, orientationOnDirection);
+
+		if(statusOnOrientation <= 0){
+			next = directionToAction(direction);
+//			if(next.equals(Action.TURN_LEFT) ||
+//					next.equals(Action.TURN_RIGHT)){
+//
+//				preTentativeTurn = next;
+//			}else{
+//				preTentativeTurn = null;
+//			}
+
+			if(statusOnOrientation == -1){
+				assert(next.equals(Action.TURN_LEFT) || next.equals(Action.TURN_RIGHT));
+				preTentativeTurn = next;
+			}else{
+				preTentativeTurn = null;
+			}
+		}
+		return next;
 	}
 	//Map Direction Left to Action Turn Left
 	//Map Direction Right to Action Turn Right
